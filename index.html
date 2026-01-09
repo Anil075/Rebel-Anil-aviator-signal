@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aviator Manual Signal</title>
+<title>Aviator Signal Panel</title>
 
 <style>
 body{
  background:#0b0b0b;
  color:#fff;
- font-family:Arial;
+ font-family:Arial,Helvetica,sans-serif;
  margin:0;
  padding:15px;
 }
@@ -19,7 +19,11 @@ body{
  padding:15px;
  margin-bottom:20px;
 }
-h2{margin:0 0 10px;color:#ff3b3b}
+h2{
+ margin:0 0 10px;
+ color:#ff3b3b;
+ text-align:center;
+}
 input,button{
  width:100%;
  padding:12px;
@@ -28,7 +32,10 @@ input,button{
  border:none;
  font-size:16px;
 }
-input{background:#1f1f1f;color:#fff}
+input{
+ background:#1f1f1f;
+ color:#fff;
+}
 button{
  background:#ff2d2d;
  color:#fff;
@@ -40,67 +47,89 @@ button{
  margin-top:10px;
 }
 .time{color:#aaa}
-.range{color:#3ddc3d;font-size:26px;font-weight:bold}
+.range{
+ color:#3ddc3d;
+ font-size:26px;
+ font-weight:bold;
+}
 .status{color:#ff5252}
-.ok{color:#3ddc3d}
 </style>
 </head>
 
 <body>
 
+<!-- ADMIN LOGIN -->
+<div class="card" id="adminLogin">
+<h2>ADMIN LOGIN</h2>
+<input id="adminLoginPass" placeholder="Enter Admin Password">
+<button onclick="adminLogin()">LOGIN</button>
+</div>
+
 <!-- ADMIN PANEL -->
 <div class="card" id="adminPanel" style="display:none;">
 <h2>ADMIN SIGNAL PANEL</h2>
 
-<input id="adminPass" placeholder="User Pass Code (e.g VIP123)">
-<input id="adminTime" placeholder="Time (14:30:00)">
+<input id="adminTime" placeholder="Time (14:30)">
 <input id="adminRange" placeholder="Range (2.30x - 4.20x)">
-<input id="adminStatus" placeholder="Message (Cash Out / Flew Away)">
+<input id="adminStatus" placeholder="Status (CASH OUT / FLEW AWAY)">
 
 <button onclick="publishSignal()">PUBLISH SIGNAL</button>
 </div>
 
-
 <!-- USER PANEL -->
-<div class="card"> 
+<div class="card">
 <h2>USER SIGNAL PANEL</h2>
 
 <input id="userPass" placeholder="Enter Your Pass Code">
 <button onclick="checkSignal()">CHECK SIGNAL</button>
 
 <div class="signal">
-<div class="time" id="sigTime">---</div>
-<div class="range" id="sigRange">NO SIGNAL</div>
-<div class="status" id="sigStatus"></div>
+ <div class="time" id="sigTime">---</div>
+ <div class="range" id="sigRange">NO SIGNAL</div>
+ <div class="status" id="sigStatus"></div>
 </div>
 </div>
 
 <script>
-let SIGNAL = {};
+const ADMIN_PASSWORD = "ADMIN999";
+const USER_PASSWORD  = "REBEL123";
+
+let SIGNAL = {
+ time:"",
+ range:"",
+ status:""
+};
+
+function adminLogin(){
+ const pass = document.getElementById("adminLoginPass").value.trim();
+ if(pass === ADMIN_PASSWORD){
+   document.getElementById("adminLogin").style.display="none";
+   document.getElementById("adminPanel").style.display="block";
+ } else {
+   alert("Wrong Admin Password");
+ }
+}
 
 function publishSignal(){
- SIGNAL = {
-   pass: document.getElementById("adminPass").value.trim(),
-   time: document.getElementById("adminTime").value,
-   range: document.getElementById("adminRange").value,
-   status: document.getElementById("adminStatus").value
- };
+ SIGNAL.time   = document.getElementById("adminTime").value.trim();
+ SIGNAL.range  = document.getElementById("adminRange").value.trim();
+ SIGNAL.status = document.getElementById("adminStatus").value.trim();
  alert("Signal Published Successfully");
 }
 
 function checkSignal(){
- const userPass = document.getElementById("userPass").value.trim();
+ const pass = document.getElementById("userPass").value.trim();
 
- if(!SIGNAL.pass || userPass !== SIGNAL.pass){
+ if(pass !== USER_PASSWORD){
    document.getElementById("sigTime").innerText="---";
    document.getElementById("sigRange").innerText="NO SIGNAL";
    document.getElementById("sigStatus").innerText="Access Denied";
    return;
  }
 
- document.getElementById("sigTime").innerText = SIGNAL.time;
- document.getElementById("sigRange").innerText = SIGNAL.range;
- document.getElementById("sigStatus").innerText = SIGNAL.status;
+ document.getElementById("sigTime").innerText = SIGNAL.time || "---";
+ document.getElementById("sigRange").innerText = SIGNAL.range || "WAIT";
+ document.getElementById("sigStatus").innerText = SIGNAL.status || "";
 }
 </script>
 
