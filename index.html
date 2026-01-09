@@ -1,136 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aviator Signal Panel</title>
+<title>Aviator Signal</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <style>
-body{
- background:#0b0b0b;
- color:#fff;
- font-family:Arial,Helvetica,sans-serif;
- margin:0;
- padding:15px;
-}
-.card{
- background:#111;
- border-radius:14px;
- padding:15px;
- margin-bottom:20px;
-}
-h2{
- margin:0 0 10px;
- color:#ff3b3b;
- text-align:center;
-}
-input,button{
- width:100%;
- padding:12px;
- margin:6px 0;
- border-radius:10px;
- border:none;
- font-size:16px;
-}
-input{
- background:#1f1f1f;
- color:#fff;
-}
-button{
- background:#ff2d2d;
- color:#fff;
- font-weight:bold;
- cursor:pointer;
-}
-.signal{
- text-align:center;
- margin-top:10px;
-}
-.time{color:#aaa}
-.range{
- color:#3ddc3d;
- font-size:26px;
- font-weight:bold;
-}
-.status{color:#ff5252}
+body{background:#0b0b0b;color:#fff;font-family:Arial;padding:20px}
+.card{background:#111;border-radius:15px;padding:15px;margin-bottom:20px}
+h2{color:#ff3b3b}
+input,button{width:100%;padding:12px;border-radius:10px;border:none;margin:6px 0}
+button{background:#ff2d2d;color:#fff;font-weight:bold}
+.signal{text-align:center}
+.range{color:#3ddc3d;font-size:26px}
+.wait{color:red}
 </style>
 </head>
 
 <body>
 
-<!-- ADMIN LOGIN -->
-<div class="card" id="adminLogin">
-<h2>ADMIN LOGIN</h2>
-<input id="adminLoginPass" placeholder="Enter Admin Password">
-<button onclick="adminLogin()">LOGIN</button>
-</div>
-
-<!-- ADMIN PANEL -->
-<div class="card" id="adminPanel" style="display:none;">
+<div class="card">
 <h2>ADMIN SIGNAL PANEL</h2>
-
-<input id="adminTime" placeholder="Time (14:30)">
-<input id="adminRange" placeholder="Range (2.30x - 4.20x)">
-<input id="adminStatus" placeholder="Status (CASH OUT / FLEW AWAY)">
-
-<button onclick="publishSignal()">PUBLISH SIGNAL</button>
+<input id="time" placeholder="Time (05:25)">
+<input id="range" placeholder="3X-10X">
+<input id="status" placeholder="Cash out">
+<button onclick="publish()">PUBLISH SIGNAL</button>
 </div>
 
-<!-- USER PANEL -->
 <div class="card">
 <h2>USER SIGNAL PANEL</h2>
-
-<input id="userPass" placeholder="Enter Your Pass Code">
-<button onclick="checkSignal()">CHECK SIGNAL</button>
-
 <div class="signal">
- <div class="time" id="sigTime">---</div>
- <div class="range" id="sigRange">NO SIGNAL</div>
- <div class="status" id="sigStatus"></div>
+<div id="t">WAIT</div>
+<div class="range" id="r"></div>
+<div id="s"></div>
 </div>
 </div>
 
 <script>
-const ADMIN_PASSWORD = "ADMIN999";
-const USER_PASSWORD  = "REBEL123";
-
-let SIGNAL = {
- time:"",
- range:"",
- status:""
+const firebaseConfig = {
+  databaseURL: "https://anil-aviator-signal-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-function adminLogin(){
- const pass = document.getElementById("adminLoginPass").value.trim();
- if(pass === ADMIN_PASSWORD){
-   document.getElementById("adminLogin").style.display="none";
-   document.getElementById("adminPanel").style.display="block";
- } else {
-   alert("Wrong Admin Password");
- }
+function publish(){
+  db.ref("signal").set({
+    time: time.value,
+    range: range.value,
+    status: status.value
+  });
 }
 
-function publishSignal(){
- SIGNAL.time   = document.getElementById("adminTime").value.trim();
- SIGNAL.range  = document.getElementById("adminRange").value.trim();
- SIGNAL.status = document.getElementById("adminStatus").value.trim();
- alert("Signal Published Successfully");
-}
-
-function checkSignal(){
- const pass = document.getElementById("userPass").value.trim();
-
- if(pass !== USER_PASSWORD){
-   document.getElementById("sigTime").innerText="---";
-   document.getElementById("sigRange").innerText="NO SIGNAL";
-   document.getElementById("sigStatus").innerText="Access Denied";
-   return;
- }
-
- document.getElementById("sigTime").innerText = SIGNAL.time || "---";
- document.getElementById("sigRange").innerText = SIGNAL.range || "WAIT";
- document.getElementById("sigStatus").innerText = SIGNAL.status || "";
-}
+db.ref("signal").on("value", snap=>{
+  if(!snap.exists()) return;
+  let d = snap.val();
+  t.innerText = d.time;
+  r.innerText = d.range;
+  s.innerText = d.status;
+});
 </script>
 
 </body>
