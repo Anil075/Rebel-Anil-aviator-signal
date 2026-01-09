@@ -3,336 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aviator Final Ready</title>
+<title>Aviator Manual Signal</title>
 
 <style>
-*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{margin:0;background:#0b0b0b;color:#fff}
-
-/* TOP */
-.topbar{
- height:60px;background:#111;
- display:flex;justify-content:space-between;align-items:center;
- padding:0 15px
+body{
+ background:#0b0b0b;
+ color:#fff;
+ font-family:Arial;
+ margin:0;
+ padding:15px;
 }
-.logo{color:#ff3b3b;font-size:22px;font-weight:bold}
-.balance{color:#4cd137;font-weight:bold}
-
-/* HISTORY */
-.history{
- display:flex;gap:14px;padding:10px;
- overflow-x:auto;font-size:14px;align-items:center
+.card{
+ background:#111;
+ border-radius:14px;
+ padding:15px;
+ margin-bottom:20px;
 }
-.history span{color:#6ec1ff}
-.history .high{color:#c77dff}
-#dotBtn{cursor:pointer;font-size:20px}
-
-/* GAME */
-.game{
- margin:10px;height:240px;border-radius:16px;
- background:radial-gradient(circle,#1a1a1a,#000);
- display:flex;flex-direction:column;
- justify-content:center;align-items:center;
- position:relative;overflow:hidden
-}
-.game h3{margin:0;font-weight:normal}
-
-.multiplier{
- font-size:60px;
- font-weight:bold;
- color:#3ddc3d;
- z-index:2
-}
-
-.start-line{
- margin-top:8px;
+h2{margin:0 0 10px;color:#ff3b3b}
+input,button{
+ width:100%;
+ padding:12px;
+ margin:6px 0;
+ border-radius:10px;
+ border:none;
  font-size:16px;
- font-weight:700;
- letter-spacing:2px;
- text-transform:uppercase;
- color:#ff2d2d;
- transition:color 1s linear;
- z-index:2
 }
-
-/* PLANE */
-.plane{
- position:absolute;
- left:-40px;
- bottom:40px;
- font-size:32px;
- opacity:0;
- transform:rotate(20deg);
- filter:hue-rotate(330deg) saturate(2);
- z-index:1
+input{background:#1f1f1f;color:#fff}
+button{
+ background:#ff2d2d;
+ color:#fff;
+ font-weight:bold;
+ cursor:pointer;
 }
-
-/* RED TRAIL */
-.trail{
- position:absolute;
- left:-60px;
- bottom:46px;
- width:60px;
- height:2px;
- background:linear-gradient(90deg, transparent, #ff2d2d);
- opacity:0;
- z-index:0
+.signal{
+ text-align:center;
+ margin-top:10px;
 }
-
-/* BET */
-.panel{
- margin:10px;background:#151515;
- border-radius:16px;padding:12px
-}
-.row{display:flex;gap:10px}
-.amount{
- flex:1;background:#1f1f1f;border-radius:12px;
- padding:10px;display:flex;
- justify-content:space-between;align-items:center;
- font-size:20px
-}
-.btn{
- flex:1;background:#3ddc3d;color:#000;
- border-radius:16px;text-align:center;
- padding:22px 0;font-size:22px;
- font-weight:bold;cursor:pointer;
- user-select:none
-}
-
-/* BOTTOM */
-.bottom{
- padding:10px;background:#111;
- display:flex;justify-content:space-between;align-items:center
-}
-.deposit{
- background:#3ddc3d;color:#000;
- padding:10px 18px;border-radius:12px;
- font-weight:bold
-}
-
-/* POPUP */
-.round-popup{
- position:fixed;
- bottom:80px;left:50%;
- transform:translateX(-50%);
- background:#111;padding:12px;
- border-radius:12px;
- display:none;flex-wrap:wrap;
- gap:8px;max-width:90%
-}
-.round-popup span{
- color:#6ec1ff;font-size:14px
-}
+.time{color:#aaa}
+.range{color:#3ddc3d;font-size:26px;font-weight:bold}
+.status{color:#ff5252}
+.ok{color:#3ddc3d}
 </style>
 </head>
 
 <body>
 
-<div class="topbar">
- <div class="logo">Aviator</div>
- <div class="balance">4.25 INR</div>
+<!-- ADMIN PANEL -->
+<div class="card">
+<h2>ADMIN SIGNAL PANEL</h2>
+
+<input id="adminPass" placeholder="User Pass Code (e.g VIP123)">
+<input id="adminTime" placeholder="Time (14:30:00)">
+<input id="adminRange" placeholder="Range (2.30x - 4.20x)">
+<input id="adminStatus" placeholder="Message (Cash Out / Flew Away)">
+
+<button onclick="publishSignal()">PUBLISH SIGNAL</button>
 </div>
 
-<div class="history">
- <span id="dotBtn">⋮</span>
-</div>
+<!-- USER PANEL -->
+<div class="card">
+<h2>USER SIGNAL PANEL</h2>
 
-<div class="game">
- <h3>GET READY...</h3>
- <div class="multiplier"></div>
- <div class="start-line">BETTING STARTS IN 3</div>
- <div class="trail"></div>
- <div class="plane">✈️</div>
-</div>
+<input id="userPass" placeholder="Enter Your Pass Code">
+<button onclick="checkSignal()">CHECK SIGNAL</button>
 
-<div class="panel">
- <div class="row">
-  <div class="amount"><span>7.00</span><span>INR</span></div>
-  <div class="btn">Bet</div>
- </div>
+<div class="signal">
+<div class="time" id="sigTime">---</div>
+<div class="range" id="sigRange">NO SIGNAL</div>
+<div class="status" id="sigStatus"></div>
 </div>
-
-<div class="panel">
- <div class="row">
-  <div class="amount"><span>10.00</span><span>INR</span></div>
-  <div class="btn">Bet</div>
- </div>
 </div>
-
-<div class="bottom">
- <div>₹ 4.25</div>
- <div class="deposit">Deposit</div>
-</div>
-
-<div class="round-popup" id="roundPopup"></div>
 
 <script>
-document.addEventListener("DOMContentLoaded",()=>{
+let SIGNAL = {};
 
-let multiplier=1, interval, balance=4.25;
-let running=false, crashPoint=2;
-let planeX=-40, planeY=40, wave=0;
+function publishSignal(){
+ SIGNAL = {
+   pass: document.getElementById("adminPass").value.trim(),
+   time: document.getElementById("adminTime").value,
+   range: document.getElementById("adminRange").value,
+   status: document.getElementById("adminStatus").value
+ };
+ alert("Signal Published Successfully");
+}
 
-const betSlots=[
- {amount:7, placed:false, cashed:false, btn:null},
- {amount:10,placed:false, cashed:false, btn:null}
-];
+function checkSignal(){
+ const userPass = document.getElementById("userPass").value.trim();
 
-const START_DELAY=3000;
-const RUN_TIME = 7000; // ✅ 2x in 7 sec
-const TICK=100;
-
-// DOM
-const multEl=document.querySelector(".multiplier");
-const statusEl=document.querySelector(".game h3");
-const historyEl=document.querySelector(".history");
-const balanceEl=document.querySelector(".balance");
-const startLine=document.querySelector(".start-line");
-const plane=document.querySelector(".plane");
-const trail=document.querySelector(".trail");
-const popup=document.getElementById("roundPopup");
-const betBtns=document.querySelectorAll(".btn");
-
-betSlots[0].btn=betBtns[0];
-betSlots[1].btn=betBtns[1];
-
-betSlots.forEach((s,i)=>{
- s.btn.onclick=()=>handleBet(i);
-});
-
-function handleBet(i){
- const s=betSlots[i];
-
- if(!running && !s.placed){
-  if(balance<s.amount) return;
-  balance-=s.amount;
-  updateBalance();
-  s.placed=true;
-  s.cashed=false;
-  s.btn.innerText="Cash Out ₹ "+(s.amount*multiplier).toFixed(2);
-  return;
+ if(!SIGNAL.pass || userPass !== SIGNAL.pass){
+   document.getElementById("sigTime").innerText="---";
+   document.getElementById("sigRange").innerText="NO SIGNAL";
+   document.getElementById("sigStatus").innerText="Access Denied";
+   return;
  }
 
- if(running && s.placed && !s.cashed){
-  balance+=s.amount*multiplier;
-  updateBalance();
-  s.cashed=true;
-  s.btn.innerText="Bet";
- }
+ document.getElementById("sigTime").innerText = SIGNAL.time;
+ document.getElementById("sigRange").innerText = SIGNAL.range;
+ document.getElementById("sigStatus").innerText = SIGNAL.status;
 }
-
-function startRound(){
- running=false; multiplier=1;
- multEl.innerText="";
- statusEl.innerText="GET READY...";
-
- planeX=-40; planeY=40; wave=0;
- plane.style.opacity=0;
- trail.style.opacity=0;
-
- betSlots.forEach(s=>{
-  s.placed=false; s.cashed=false; s.btn.innerText="Bet";
- });
-
- crashPoint=(Math.random()*10+1.5).toFixed(2);
-
- let count=3;
- startLine.style.display="block";
- startLine.innerText="BETTING STARTS IN 3";
- startLine.style.color="#ff2d2d";
-
- const cd=setInterval(()=>{
-  count--;
-  if(count>0){
-   startLine.innerText="BETTING STARTS IN "+count;
-   startLine.style.color=count===2?"#aa0000":"#000";
-  }else{
-   clearInterval(cd);
-   startLine.style.display="none";
-  }
- },1000);
-
- setTimeout(runPlane,START_DELAY);
-}
-
-function runPlane(){
- running=true;
- statusEl.innerText="FLYING...";
- plane.style.opacity=1;
- trail.style.opacity=1;
- multEl.style.color="#3ddc3d";
-
- const steps=RUN_TIME/TICK;
- const inc=(crashPoint-1)/steps;
-
- interval=setInterval(()=>{
-  multiplier+=inc;
-  multEl.innerText=multiplier.toFixed(2)+"x";
-
-  // ✈️ smooth plane
-  planeX+=1.4;
-  wave+=0.18;
-  planeY+=0.45+Math.sin(wave)*0.9;
-
-  plane.style.left=planeX+"px";
-  plane.style.bottom=planeY+"px";
-  trail.style.left=(planeX-50)+"px";
-  trail.style.bottom=(planeY+6)+"px";
-
-  // 💰 live cashout amount
-  betSlots.forEach(s=>{
-    if(s.placed && !s.cashed){
-      s.btn.innerText="Cash Out ₹ "+(s.amount*multiplier).toFixed(2);
-    }
-  });
-
-  if(multiplier>=crashPoint) stopRound();
- },TICK);
-}
-
-function stopRound(){
- clearInterval(interval);
- running=false;
- multiplier=parseFloat(crashPoint);
-
- multEl.innerText=multiplier.toFixed(2)+"x";
- multEl.style.fontSize="72px";
- multEl.style.color="#ff3b3b";
-
- plane.style.opacity=0;
- trail.style.opacity=0;
- statusEl.innerText="FLEW AWAY!";
-
- addHistory(multiplier);
- setTimeout(startRound,2000);
-}
-
-function addHistory(x){
- const s=document.createElement("span");
- s.innerText=x.toFixed(2)+"x";
- s.className=x>=2?"high":"";
- historyEl.prepend(s);
-
- const p=document.createElement("span");
- p.innerText=x.toFixed(2)+"x";
- popup.prepend(p);
- if(popup.children.length>30)
-  popup.removeChild(popup.lastChild);
-}
-
-document.getElementById("dotBtn").onclick=()=>{
- popup.style.display=
- popup.style.display==="flex"?"none":"flex";
-};
-
-function updateBalance(){
- balanceEl.innerText=balance.toFixed(2)+" INR";
-}
-
-updateBalance();
-startRound();
-
-});
 </script>
+
 </body>
 </html>
