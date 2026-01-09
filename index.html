@@ -7,10 +7,10 @@
 
 <style>
 body{
+  margin:0;
   background:#0b0b0b;
   color:#fff;
   font-family:Arial;
-  margin:0;
   padding:15px;
 }
 .card{
@@ -19,7 +19,10 @@ body{
   padding:15px;
   margin-bottom:20px;
 }
-h2{color:#ff3b3b;text-align:center}
+h2{
+  color:#ff3b3b;
+  text-align:center;
+}
 input,button{
   width:100%;
   padding:12px;
@@ -33,29 +36,30 @@ button{
   background:#ff2d2d;
   color:#fff;
   font-weight:bold;
+  cursor:pointer;
 }
 .signal{
   text-align:center;
-  margin-top:10px;
 }
 .time{color:#aaa}
-.range{color:#3ddc3d;font-size:26px;font-weight:bold}
+.range{color:#3ddc3d;font-size:28px;font-weight:bold}
 .status{color:#ff5252}
 
 /* POPUP */
 .popup{
   position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.85);
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.9);
   display:flex;
-  justify-content:center;
   align-items:center;
+  justify-content:center;
   z-index:999;
 }
 .popup-box{
   background:#111;
   padding:20px;
-  border-radius:12px;
+  border-radius:14px;
   width:90%;
   max-width:350px;
   text-align:center;
@@ -66,103 +70,91 @@ button{
 
 <body>
 
-<!-- ADMIN LOGIN -->
-<div class="popup" id="adminLogin">
+<!-- LOGIN POPUP -->
+<div class="popup" id="loginPopup">
   <div class="popup-box">
-    <h2>ADMIN LOGIN</h2>
-    <input type="password" id="adminPass" placeholder="Admin Password">
-    <button onclick="adminLogin()">LOGIN</button>
-    <p id="adminErr"></p>
-  </div>
-</div>
-
-<!-- USER LOGIN -->
-<div class="popup" id="userLogin">
-  <div class="popup-box">
-    <h2>USER LOGIN</h2>
-    <input type="password" id="userPass" placeholder="User Password">
-    <button onclick="userLogin()">ENTER</button>
-    <p id="userErr"></p>
+    <h2>LOGIN</h2>
+    <input type="password" id="loginPass" placeholder="Enter Password">
+    <button onclick="login()">ENTER</button>
+    <p id="loginErr"></p>
   </div>
 </div>
 
 <!-- ADMIN PANEL -->
 <div class="card" id="adminPanel" style="display:none;">
-<h2>ADMIN SIGNAL PANEL</h2>
-<input id="aTime" placeholder="Time (06:30)">
-<input id="aRange" placeholder="Range (4X-20X)">
-<input id="aStatus" placeholder="Status (Wait / Cash Out)">
-<button onclick="publishSignal()">PUBLISH SIGNAL</button>
+  <h2>ADMIN SIGNAL PANEL</h2>
+  <input id="aTime" placeholder="Time (06:30)">
+  <input id="aRange" placeholder="Range (4X - 20X)">
+  <input id="aStatus" placeholder="Status (Wait / Cash Out)">
+  <button onclick="publishSignal()">PUBLISH SIGNAL</button>
 </div>
 
 <!-- USER PANEL -->
 <div class="card" id="userPanel" style="display:none;">
-<h2>USER SIGNAL PANEL</h2>
-<div class="signal">
-  <div class="time" id="uTime">WAIT</div>
-  <div class="range" id="uRange">---</div>
-  <div class="status" id="uStatus">WAIT</div>
-</div>
+  <h2>USER SIGNAL PANEL</h2>
+  <div class="signal">
+    <div class="time" id="uTime">WAIT</div>
+    <div class="range" id="uRange">---</div>
+    <div class="status" id="uStatus"></div>
+  </div>
 </div>
 
-<!-- FIREBASE -->
+<!-- FIREBASE v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-// ===== PASSWORDS =====
-const ADMIN_PASSWORD = "ADMIN123";
-const USER_PASSWORD  = "USER123";
-
-// ===== FIREBASE CONFIG (CHANGE THIS) =====
+/* 🔥 FIREBASE CONFIG (TUMHARA) */
 var firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "YOUR_PROJECT",
+  apiKey: "AIzaSyAIFtGhFvHxR4E6Gy8R0oLZUCt_GsLL1I",
+  authDomain: "anil-aviator-signal.firebaseapp.com",
+  databaseURL: "https://anil-aviator-signal-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "anil-aviator-signal",
+  storageBucket: "anil-aviator-signal.appspot.com",
+  messagingSenderId: "965788077790",
+  appId: "1:965788077790:web:08c17eeac016e19e93c4ff"
 };
 firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
 
-const db = firebase.database().ref("signal");
+/* PASSWORDS */
+const ADMIN_PASS = "ADMIN123";
+const USER_PASS  = "USER123";
 
-// ===== LOGIN =====
-function adminLogin(){
-  if(document.getElementById("adminPass").value === ADMIN_PASSWORD){
-    document.getElementById("adminLogin").style.display="none";
+/* LOGIN */
+function login(){
+  const p = document.getElementById("loginPass").value.trim();
+  if(p === ADMIN_PASS){
+    document.getElementById("loginPopup").style.display="none";
     document.getElementById("adminPanel").style.display="block";
-  }else{
-    document.getElementById("adminErr").innerText="Wrong Admin Password";
-  }
-}
-
-function userLogin(){
-  if(document.getElementById("userPass").value === USER_PASSWORD){
-    document.getElementById("userLogin").style.display="none";
+    document.getElementById("userPanel").style.display="block";
+  }else if(p === USER_PASS){
+    document.getElementById("loginPopup").style.display="none";
     document.getElementById("userPanel").style.display="block";
   }else{
-    document.getElementById("userErr").innerText="Wrong User Password";
+    document.getElementById("loginErr").innerText="Wrong Password";
   }
 }
 
-// ===== ADMIN PUBLISH =====
+/* ADMIN → PUBLISH */
 function publishSignal(){
-  db.set({
+  db.ref("signal").set({
     time: aTime.value,
     range: aRange.value,
     status: aStatus.value
   });
+  alert("Signal Published");
 }
 
-// ===== LIVE UPDATE FOR USERS =====
-db.on("value", snap=>{
+/* USER → LIVE UPDATE */
+db.ref("signal").on("value", snap=>{
   if(!snap.exists()) return;
   const d = snap.val();
-  uTime.innerText   = d.time;
-  uRange.innerText  = d.range;
-  uStatus.innerText = d.status;
+  uTime.innerText   = d.time || "WAIT";
+  uRange.innerText  = d.range || "---";
+  uStatus.innerText = d.status || "";
 });
 </script>
 
 </body>
 </html>
-
