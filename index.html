@@ -1,66 +1,168 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aviator Signal</title>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
 <style>
-body{background:#0b0b0b;color:#fff;font-family:Arial;padding:20px}
-.card{background:#111;border-radius:15px;padding:15px;margin-bottom:20px}
-h2{color:#ff3b3b}
-input,button{width:100%;padding:12px;border-radius:10px;border:none;margin:6px 0}
-button{background:#ff2d2d;color:#fff;font-weight:bold}
-.signal{text-align:center}
-.range{color:#3ddc3d;font-size:26px}
-.wait{color:red}
+body{
+  background:#0b0b0b;
+  color:#fff;
+  font-family:Arial;
+  margin:0;
+  padding:15px;
+}
+.card{
+  background:#111;
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:20px;
+}
+h2{color:#ff3b3b;text-align:center}
+input,button{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:10px;
+  border:none;
+  font-size:16px;
+}
+input{background:#1f1f1f;color:#fff}
+button{
+  background:#ff2d2d;
+  color:#fff;
+  font-weight:bold;
+}
+.signal{
+  text-align:center;
+  margin-top:10px;
+}
+.time{color:#aaa}
+.range{color:#3ddc3d;font-size:26px;font-weight:bold}
+.status{color:#ff5252}
+
+/* POPUP */
+.popup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+.popup-box{
+  background:#111;
+  padding:20px;
+  border-radius:12px;
+  width:90%;
+  max-width:350px;
+  text-align:center;
+}
+.popup-box p{color:red}
 </style>
 </head>
 
 <body>
 
-<div class="card">
-<h2>ADMIN SIGNAL PANEL</h2>
-<input id="time" placeholder="Time (05:25)">
-<input id="range" placeholder="3X-10X">
-<input id="status" placeholder="Cash out">
-<button onclick="publish()">PUBLISH SIGNAL</button>
+<!-- ADMIN LOGIN -->
+<div class="popup" id="adminLogin">
+  <div class="popup-box">
+    <h2>ADMIN LOGIN</h2>
+    <input type="password" id="adminPass" placeholder="Admin Password">
+    <button onclick="adminLogin()">LOGIN</button>
+    <p id="adminErr"></p>
+  </div>
 </div>
 
-<div class="card">
+<!-- USER LOGIN -->
+<div class="popup" id="userLogin">
+  <div class="popup-box">
+    <h2>USER LOGIN</h2>
+    <input type="password" id="userPass" placeholder="User Password">
+    <button onclick="userLogin()">ENTER</button>
+    <p id="userErr"></p>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="card" id="adminPanel" style="display:none;">
+<h2>ADMIN SIGNAL PANEL</h2>
+<input id="aTime" placeholder="Time (06:30)">
+<input id="aRange" placeholder="Range (4X-20X)">
+<input id="aStatus" placeholder="Status (Wait / Cash Out)">
+<button onclick="publishSignal()">PUBLISH SIGNAL</button>
+</div>
+
+<!-- USER PANEL -->
+<div class="card" id="userPanel" style="display:none;">
 <h2>USER SIGNAL PANEL</h2>
 <div class="signal">
-<div id="t">WAIT</div>
-<div class="range" id="r"></div>
-<div id="s"></div>
+  <div class="time" id="uTime">WAIT</div>
+  <div class="range" id="uRange">---</div>
+  <div class="status" id="uStatus">WAIT</div>
 </div>
 </div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-const firebaseConfig = {
-  databaseURL: "https://anil-aviator-signal-default-rtdb.asia-southeast1.firebasedatabase.app"
+// ===== PASSWORDS =====
+const ADMIN_PASSWORD = "ADMIN123";
+const USER_PASSWORD  = "USER123";
+
+// ===== FIREBASE CONFIG (CHANGE THIS) =====
+var firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "YOUR_PROJECT",
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
 
-function publish(){
-  db.ref("signal").set({
-    time: time.value,
-    range: range.value,
-    status: status.value
+const db = firebase.database().ref("signal");
+
+// ===== LOGIN =====
+function adminLogin(){
+  if(document.getElementById("adminPass").value === ADMIN_PASSWORD){
+    document.getElementById("adminLogin").style.display="none";
+    document.getElementById("adminPanel").style.display="block";
+  }else{
+    document.getElementById("adminErr").innerText="Wrong Admin Password";
+  }
+}
+
+function userLogin(){
+  if(document.getElementById("userPass").value === USER_PASSWORD){
+    document.getElementById("userLogin").style.display="none";
+    document.getElementById("userPanel").style.display="block";
+  }else{
+    document.getElementById("userErr").innerText="Wrong User Password";
+  }
+}
+
+// ===== ADMIN PUBLISH =====
+function publishSignal(){
+  db.set({
+    time: aTime.value,
+    range: aRange.value,
+    status: aStatus.value
   });
 }
 
-db.ref("signal").on("value", snap=>{
+// ===== LIVE UPDATE FOR USERS =====
+db.on("value", snap=>{
   if(!snap.exists()) return;
-  let d = snap.val();
-  t.innerText = d.time;
-  r.innerText = d.range;
-  s.innerText = d.status;
+  const d = snap.val();
+  uTime.innerText   = d.time;
+  uRange.innerText  = d.range;
+  uStatus.innerText = d.status;
 });
 </script>
 
 </body>
 </html>
+
